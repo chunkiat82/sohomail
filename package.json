@@ -1,0 +1,12 @@
+{
+  "name": "soho-mail",
+  "description": "An RESTFUL web app to schedule and send emails",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "3.x"
+    , "mongoose": "*"
+    , "nodemailer": "*"
+    , "underscore": "*"
+  }
+}

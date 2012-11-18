@@ -1,0 +1,51 @@
+Sun Nov 18 15:32:58 [initandlisten] MongoDB starting : pid=4222 port=27017 dbpath=/Users/raymond/git/nodesohomail/db 64-bit host=Raymond-Hos-iMac.local
+Sun Nov 18 15:32:58 [initandlisten] 
+Sun Nov 18 15:32:58 [initandlisten] ** WARNING: soft rlimits too low. Number of files is 256, should be at least 1000
+Sun Nov 18 15:32:58 [initandlisten] db version v2.2.1, pdfile version 4.5
+Sun Nov 18 15:32:58 [initandlisten] git version: d6764bf8dfe0685521b8bc7b98fd1fab8cfeb5ae
+Sun Nov 18 15:32:58 [initandlisten] build info: Darwin erh-tnt.local 10.8.0 Darwin Kernel Version 10.8.0: Tue Jun  7 16:33:36 PDT 2011; root:xnu-1504.15.3~1/RELEASE_I386 i386 BOOST_LIB_VERSION=1_49
+Sun Nov 18 15:32:58 [initandlisten] options: { dbpath: "db", fork: true, logappend: true, logpath: "db/mongodb.log" }
+Sun Nov 18 15:32:58 [initandlisten] journal dir=/Users/raymond/git/nodesohomail/db/journal
+Sun Nov 18 15:32:58 [initandlisten] recover : no journal files present, no recovery needed
+Sun Nov 18 15:32:58 [websvr] admin web console waiting for connections on port 28017
+Sun Nov 18 15:32:58 [initandlisten] waiting for connections on port 27017
+Sun Nov 18 15:41:13 [initandlisten] connection accepted from 127.0.0.1:63153 #1 (1 connection now open)
+Sun Nov 18 15:41:13 [initandlisten] connection accepted from 127.0.0.1:63154 #2 (2 connections now open)
+Sun Nov 18 15:41:13 [initandlisten] connection accepted from 127.0.0.1:63155 #3 (3 connections now open)
+Sun Nov 18 15:41:13 [initandlisten] connection accepted from 127.0.0.1:63156 #4 (4 connections now open)
+Sun Nov 18 15:41:13 [initandlisten] connection accepted from 127.0.0.1:63157 #5 (5 connections now open)
+Sun Nov 18 15:41:45 [conn4] end connection 127.0.0.1:63156 (4 connections now open)
+Sun Nov 18 15:41:45 [conn3] end connection 127.0.0.1:63155 (4 connections now open)
+Sun Nov 18 15:41:45 [conn1] end connection 127.0.0.1:63153 (3 connections now open)
+Sun Nov 18 15:41:45 [conn5] end connection 127.0.0.1:63157 (3 connections now open)
+Sun Nov 18 15:41:45 [conn2] end connection 127.0.0.1:63154 (3 connections now open)
+Sun Nov 18 15:41:52 [initandlisten] connection accepted from 127.0.0.1:63170 #6 (1 connection now open)
+Sun Nov 18 15:41:52 [initandlisten] connection accepted from 127.0.0.1:63171 #7 (2 connections now open)
+Sun Nov 18 15:41:52 [initandlisten] connection accepted from 127.0.0.1:63172 #8 (3 connections now open)
+Sun Nov 18 15:41:52 [initandlisten] connection accepted from 127.0.0.1:63173 #9 (4 connections now open)
+Sun Nov 18 15:41:52 [initandlisten] connection accepted from 127.0.0.1:63174 #10 (5 connections now open)
+Sun Nov 18 15:56:06 [conn10] end connection 127.0.0.1:63174 (4 connections now open)
+Sun Nov 18 15:56:06 [conn8] end connection 127.0.0.1:63172 (4 connections now open)
+Sun Nov 18 15:56:06 [conn6] end connection 127.0.0.1:63170 (4 connections now open)
+Sun Nov 18 15:56:06 [conn7] end connection 127.0.0.1:63171 (4 connections now open)
+Sun Nov 18 15:56:06 [conn9] end connection 127.0.0.1:63173 (4 connections now open)
+Sun Nov 18 15:56:16 [initandlisten] connection accepted from 127.0.0.1:63448 #11 (1 connection now open)
+Sun Nov 18 15:56:16 [initandlisten] connection accepted from 127.0.0.1:63449 #12 (2 connections now open)
+Sun Nov 18 15:56:16 [initandlisten] connection accepted from 127.0.0.1:63450 #13 (3 connections now open)
+Sun Nov 18 15:56:16 [initandlisten] connection accepted from 127.0.0.1:63451 #14 (4 connections now open)
+Sun Nov 18 15:56:16 [initandlisten] connection accepted from 127.0.0.1:63452 #15 (5 connections now open)
+Sun Nov 18 15:56:16 [FileAllocator] allocating new datafile /Users/raymond/git/nodesohomail/db/test.ns, filling with zeroes...
+Sun Nov 18 15:56:16 [FileAllocator] creating directory /Users/raymond/git/nodesohomail/db/_tmp
+Sun Nov 18 15:56:16 [FileAllocator] done allocating datafile /Users/raymond/git/nodesohomail/db/test.ns, size: 16MB,  took 0.016 secs
+Sun Nov 18 15:56:17 [FileAllocator] allocating new datafile /Users/raymond/git/nodesohomail/db/test.0, filling with zeroes...
+Sun Nov 18 15:56:17 [FileAllocator] done allocating datafile /Users/raymond/git/nodesohomail/db/test.0, size: 64MB,  took 0.653 secs
+Sun Nov 18 15:56:17 [FileAllocator] allocating new datafile /Users/raymond/git/nodesohomail/db/test.1, filling with zeroes...
+Sun Nov 18 15:56:17 [conn12] build index test.cats { _id: 1 }
+Sun Nov 18 15:56:17 [conn12] build index done.  scanned 0 total records. 0 secs
+Sun Nov 18 15:56:17 [conn12] insert test.cats keyUpdates:0 locks(micros) w:758092 757ms
+Sun Nov 18 15:56:19 [FileAllocator] done allocating datafile /Users/raymond/git/nodesohomail/db/test.1, size: 128MB,  took 1.336 secs
+Sun Nov 18 15:56:44 [conn15] end connection 127.0.0.1:63452 (4 connections now open)
+Sun Nov 18 15:56:44 [conn13] end connection 127.0.0.1:63450 (4 connections now open)
+Sun Nov 18 15:56:44 [conn11] end connection 127.0.0.1:63448 (4 connections now open)
+Sun Nov 18 15:56:44 [conn12] end connection 127.0.0.1:63449 (3 connections now open)
+Sun Nov 18 15:56:44 [conn14] end connection 127.0.0.1:63451 (4 connections now open)
