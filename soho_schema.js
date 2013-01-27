@@ -15,6 +15,7 @@ exports.EmailQueue = mongoose.model('EmailQueue', new Schema({
 	, description:'string'
 	, html:'string'
 	, status:'string'
+	, appName:''
 	, dateCreated :'date'
 	, lastUpdated:'date'
 	, dateCompleted:'date'

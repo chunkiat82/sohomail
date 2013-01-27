@@ -1,0 +1,7 @@
+{>layout/}
+{<content}
+<div style="width:100px;margin:0 auto;">
+	<a href="/queue">Queues</a>
+</div>
+<footer style="width:300px;margin:0 auto;">SOHO Mailing Service</footer>
+{/content}

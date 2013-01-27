@@ -8,5 +8,9 @@
     , "mongoose": "*"
     , "nodemailer": "*"
     , "underscore": "*"
+    , "dustjs-linkedin": "*"
+    , "dustjs-helpers": "*"
+    , "consolidate": "*"
+    , "connect-mongo": "*"
   }
 }

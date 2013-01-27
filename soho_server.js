@@ -1,13 +1,36 @@
 var express = require('express')
 	,app = express();
 var _ = require("underscore");
-var Mail = require('./soho_mail.js');
-var Models = require('./soho_schema.js');
+var mail = require('./soho_mail.js');
+var models = require('./soho_schema.js');
+var routes = require('./routes');
 var portNumber=3001;
+
+var dust = require('dustjs-linkedin')
+	, cons = require('consolidate');
+
+var MongoStore = require('connect-mongo')(express);
+// assign the dust engine to .dust files
+app.engine('dust', cons.dust);
+app.configure(function(){
+    app.set('view engine', 'dust');
+    app.set('views', __dirname + '/views');
+    app.use(express.static(__dirname + '/public', {redirect: false}));
+    app.use(express.bodyParser());
+    app.use(express.cookieParser());
+    app.use(express.session({
+    	secret: 'foo',
+    	store: new MongoStore({
+      		db: 'sohomail'
+    	})
+  	}));
+    app.use(app.router);
+ });
 
 //Temp hardcode FROM, SUBJECT and TEXT
 var FROM ='chunkiat82@gmail.com'
 
+app.get('/', routes.index);
 
 app.get('/email', function(req, res){
 
@@ -28,7 +51,7 @@ app.get('/email', function(req, res){
 
 //CRUD queue
 app.get('/queue',function(req,res){
-	var queues = Models.EmailQueue.find().select().exec(function(err, data){
+	var queues = models.EmailQueue.find().select().exec(function(err, data){
 		var body =  JSON.stringify(data,function censor(key, values) {
   			if (key == "jobs") {
   				var finalValues = [];
@@ -50,7 +73,7 @@ app.get('/queue',function(req,res){
 
 app.get('/queue/:id',function(req,res){
 	//console.log("id="+req.param('id'));
-	var queues = Models.EmailQueue.findOne({'_id':req.param('id')}).select().exec(function(err, data){
+	var queues = models.EmailQueue.findOne({'_id':req.param('id')}).select().exec(function(err, data){
 		var body =  JSON.stringify(data,function censor(key, values) {
   			if (key == "jobs") {
   				var finalValues = [];
@@ -73,7 +96,7 @@ app.get('/queue/:id',function(req,res){
 //CRUD jobs
 
 app.get('/job',function(req,res){
-	var jobs = Models.EmailJob.find().select().exec(function(err, data){
+	var jobs = models.EmailJob.find().select().exec(function(err, data){
 		var body =  JSON.stringify(data,null, 4);
   		res.setHeader('Content-Type', 'application/json');
   		res.setHeader('Content-Length', body.length);
@@ -83,7 +106,7 @@ app.get('/job',function(req,res){
 
 app.get('/job/:id',function(req,res){
 	//console.log("id="+req.param('id'));
-	var queues = Models.EmailJob.findOne({'_id':req.param('id')}).select().exec(function(err, data){
+	var queues = models.EmailJob.findOne({'_id':req.param('id')}).select().exec(function(err, data){
 		var body =  JSON.stringify(data,null, 4);
   		res.setHeader('Content-Type', 'application/json');
   		res.setHeader('Content-Length', body.length);
@@ -101,7 +124,7 @@ function creatingJobs(tos,res){
 		input.push(tos);
 
 	_.each(input, function(value, key, list){
-		var job = new Models.EmailJob({
+		var job = new models.EmailJob({
 			to:value
 			,from:FROM
 			,subject:FROM
@@ -120,7 +143,7 @@ function creatingJobs(tos,res){
 	});
 
 	console.log("jobs="+jobs);
-	var queue = new Models.EmailQueue({
+	var queue = new models.EmailQueue({
 		template:'string'
 		, description:'string'
 		, html:'Hello World People!!!!'
@@ -164,14 +187,14 @@ function sendEmail(queue){
 
 	_.each(queue.jobs,function(value, key, list){
 		console.log("jobid="+value);
-		Models.EmailJob
+		models.EmailJob
 			.findOne({ '_id':value })
 			.select('to from subject status')
 			.where('status').ne('sent')
 			.exec(function(err,job){
 				if (err) return handleError(err);	
 				console.log('job='+job);
-				Mail.sendMail({'to':job.to, 'from':job.from, 'subject':job.subject ,'html':queue.html});
+				mail.sendMail({'to':job.to, 'from':job.from, 'subject':job.subject ,'html':queue.html});
 				job.status='sent';
 				job.save();
 			});
