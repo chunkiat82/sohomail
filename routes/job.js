@@ -1,3 +1,4 @@
+var models = require('../soho_schema.js');
 exports.list = function(req, res){
 	res.locals.session = req.session;
   	var jobs = models.EmailJob.find().select().exec(function(err, data){
