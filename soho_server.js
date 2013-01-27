@@ -29,8 +29,19 @@ app.get('/email', function(req, res){
 //CRUD queue
 app.get('/queue',function(req,res){
 	var queues = Models.EmailQueue.find().select().exec(function(err, data){
-		var body =  JSON.stringify(data,null, 4);
-  		res.setHeader('Content-Type', 'application/json');
+		var body =  JSON.stringify(data,function censor(key, values) {
+  			if (key == "jobs") {
+  				var finalValues = [];
+  				console.log(values);
+				_.each(values, function(value, key, list){
+					value = '<a href=\'/job/'+value+'\'>'+value+'</a>';
+					finalValues.push(value);
+				});
+    			return finalValues;
+  			}
+  			return values;
+		}, '');
+  		res.setHeader('Content-Type', 'text/html');
   		res.setHeader('Content-Length', body.length);
   		res.end(body);	
 	});
@@ -40,8 +51,19 @@ app.get('/queue',function(req,res){
 app.get('/queue/:id',function(req,res){
 	//console.log("id="+req.param('id'));
 	var queues = Models.EmailQueue.findOne({'_id':req.param('id')}).select().exec(function(err, data){
-		var body =  JSON.stringify(data,null, 4);
-  		res.setHeader('Content-Type', 'application/json');
+		var body =  JSON.stringify(data,function censor(key, values) {
+  			if (key == "jobs") {
+  				var finalValues = [];
+  				console.log(values);
+				_.each(values, function(value, key, list){
+					value = '<a href=\'/job/'+value+'\'>'+value+'</a>';
+					finalValues.push(value);
+				});
+    			return finalValues;
+  			}
+  			return values;
+		}, 4);
+  		res.setHeader('Content-Type', 'text/html');
   		res.setHeader('Content-Length', body.length);
   		res.end(body);	
 	});
@@ -72,7 +94,13 @@ app.get('/job/:id',function(req,res){
 function creatingJobs(tos,res){
 
 	var jobs = [];
-	_.each(tos, function(value, key, list){
+	var input = [];
+	if (_.isArray(tos)) 
+		input = tos
+	else
+		input.push(tos);
+
+	_.each(input, function(value, key, list){
 		var job = new Models.EmailJob({
 			to:value
 			,from:FROM
