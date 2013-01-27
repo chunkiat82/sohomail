@@ -12,5 +12,6 @@
     , "dustjs-helpers": "*"
     , "consolidate": "*"
     , "connect-mongo": "*"
+    , "require-dir": "*"
   }
 }

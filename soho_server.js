@@ -1,9 +1,10 @@
+var requireDir = require('require-dir');
 var express = require('express')
 	,app = express();
 var _ = require("underscore");
 var mail = require('./soho_mail.js');
 var models = require('./soho_schema.js');
-var routes = require('./routes');
+var routes = requireDir('./routes');
 var portNumber=3001;
 
 var dust = require('dustjs-linkedin')
@@ -30,7 +31,7 @@ app.configure(function(){
 //Temp hardcode FROM, SUBJECT and TEXT
 var FROM ='chunkiat82@gmail.com'
 
-app.get('/', routes.index);
+app.get('/', routes.home.index);
 
 app.get('/email', function(req, res){
 
@@ -50,47 +51,9 @@ app.get('/email', function(req, res){
 });
 
 //CRUD queue
-app.get('/queue',function(req,res){
-	var queues = models.EmailQueue.find().select().exec(function(err, data){
-		var body =  JSON.stringify(data,function censor(key, values) {
-  			if (key == "jobs") {
-  				var finalValues = [];
-  				console.log(values);
-				_.each(values, function(value, key, list){
-					value = '<a href=\'/job/'+value+'\'>'+value+'</a>';
-					finalValues.push(value);
-				});
-    			return finalValues;
-  			}
-  			return values;
-		}, '');
-  		res.setHeader('Content-Type', 'text/html');
-  		res.setHeader('Content-Length', body.length);
-  		res.end(body);	
-	});
+app.get('/queue', routes.queue.list);
 
-});
-
-app.get('/queue/:id',function(req,res){
-	//console.log("id="+req.param('id'));
-	var queues = models.EmailQueue.findOne({'_id':req.param('id')}).select().exec(function(err, data){
-		var body =  JSON.stringify(data,function censor(key, values) {
-  			if (key == "jobs") {
-  				var finalValues = [];
-  				console.log(values);
-				_.each(values, function(value, key, list){
-					value = '<a href=\'/job/'+value+'\'>'+value+'</a>';
-					finalValues.push(value);
-				});
-    			return finalValues;
-  			}
-  			return values;
-		}, 4);
-  		res.setHeader('Content-Type', 'text/html');
-  		res.setHeader('Content-Length', body.length);
-  		res.end(body);	
-	});
-});
+app.get('/queue/:id', routes.queue.get);
 
 
 //CRUD jobs
