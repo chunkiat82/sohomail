@@ -26,6 +26,49 @@ app.get('/email', function(req, res){
 	
 });
 
+//CRUD queue
+app.get('/queue',function(req,res){
+	var queues = Models.EmailQueue.find().select().exec(function(err, data){
+		var body =  JSON.stringify(data,null, 4);
+  		res.setHeader('Content-Type', 'application/json');
+  		res.setHeader('Content-Length', body.length);
+  		res.end(body);	
+	});
+
+});
+
+app.get('/queue/:id',function(req,res){
+	//console.log("id="+req.param('id'));
+	var queues = Models.EmailQueue.findOne({'_id':req.param('id')}).select().exec(function(err, data){
+		var body =  JSON.stringify(data,null, 4);
+  		res.setHeader('Content-Type', 'application/json');
+  		res.setHeader('Content-Length', body.length);
+  		res.end(body);	
+	});
+});
+
+
+//CRUD jobs
+
+app.get('/job',function(req,res){
+	var jobs = Models.EmailJob.find().select().exec(function(err, data){
+		var body =  JSON.stringify(data,null, 4);
+  		res.setHeader('Content-Type', 'application/json');
+  		res.setHeader('Content-Length', body.length);
+  		res.end(body);	
+	});
+});
+
+app.get('/job/:id',function(req,res){
+	//console.log("id="+req.param('id'));
+	var queues = Models.EmailJob.findOne({'_id':req.param('id')}).select().exec(function(err, data){
+		var body =  JSON.stringify(data,null, 4);
+  		res.setHeader('Content-Type', 'application/json');
+  		res.setHeader('Content-Length', body.length);
+  		res.end(body);	
+	});
+});
+/////////////////////////////////////////////////////////////////////////////
 function creatingJobs(tos,res){
 
 	var jobs = [];
@@ -50,23 +93,26 @@ function creatingJobs(tos,res){
 
 	console.log("jobs="+jobs);
 	var queue = new Models.EmailQueue({
-	template:'string'
-	, description:'string'
-	, html:'Hello World People!!!!'
-	, status:'string'
-	, dateCreated :new Date()
-	, lastUpdated:new Date()
-	, dateCompleted:new Date()
-	, jobs:jobs});
+		template:'string'
+		, description:'string'
+		, html:'Hello World People!!!!'
+		, status:'string'
+		, dateCreated :new Date()
+		, lastUpdated:new Date()
+		, dateCompleted:new Date()
+		, jobs:jobs});
+
 	queue.save(function (err) {
-	  if (err){
-	  	console.log('queue save error');
-	  }
-	  else{
-	  	console.log('queue created');
-	  }
+		if (err){
+			console.log('queue save error');
+		}
+		else{
+			console.log('queue created');
+		}
 	  
 	});
+	
+	//Delay and start the job non blocking
 	setTimeout(function(){sendEmail(queue);}, 2000);
 
 	var body =  JSON.stringify(tos);
