@@ -1,6 +1,6 @@
 var _ = require("underscore");
-var mail = require('../soho_mail.js');
-var models = require('../soho_schema.js');
+var mail = require('../mailer');
+var models = require('../models');
 
 exports.post = function(req, res){
 	console.log(req.query); 
@@ -76,7 +76,7 @@ exports.post = function(req, res){
 			template:'string'
 			, description:'string'
 			, html:'Hello World People!!!!'
-			, status:'string'
+			, status:'active'
 			, dateCreated :new Date()
 			, lastUpdated:new Date()
 			, dateCompleted:new Date()

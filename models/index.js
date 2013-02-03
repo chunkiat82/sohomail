@@ -4,29 +4,29 @@ var mongoose = require('mongoose')
 mongoose.connect('localhost', 'soho_mail');
 
 exports.EmailJob = mongoose.model('EmailJob', new Schema({
-	to:'String'
-	,from:'String'
-	,subject:'String'
-	,status:'String'
+	to: String
+	,from: String
+	,subject: String
+	,status:{type: String, enum: ['pending', 'sent', 'failed']}
 	,dateCreated:{ type: Date, default: Date.now }
-}), 'EmailJob');
+}), 'email_job');
 
 exports.EmailQueue = mongoose.model('EmailQueue', new Schema({
-	template:'string'
-	, description:'string'
-	, html:'string'
-	, status:'string'
+	template: String
+	, description: String
+	, html: String
+	, status:{type: String, enum: ['active.', 'inactive.', 'error']}
 	, appName:''
 	, dateCreated :{ type: Date, default: Date.now }
 	, lastUpdated:{ type: Date, default: Date.now }
 	, dateCompleted:{ type: Date, default: Date.now }
 	, jobs:[{ type: Schema.Types.ObjectId, ref: 'EmailJob' }]
-}), 'EmailQueue');
+}), 'email_queue');
 
 exports.EmailTemplate = mongoose.model('EmailTemplate', new Schema({
-	name:'string'
-	, content : 'string'
+	name:String
+	, content : String
 	, dateCreated :{ type: Date, default: Date.now }
-}), 'EmailTemplate');
+}), 'email_template');
 
 

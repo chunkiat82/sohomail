@@ -2,8 +2,8 @@ var requireDir = require('require-dir');
 var express = require('express')
 	,app = express();
 var _ = require("underscore");
-var mail = require('./soho_mail.js');
-var models = require('./soho_schema.js');
+var mail = require('./mailer');
+var models = require('./models');
 var routes = requireDir('./routes');
 
 var crud = require('crud');
@@ -37,7 +37,7 @@ app.get('/email', routes.email.post);
 
 //CRUD queue
 app.get('/queue', routes.queue.list);
-app.get('/queue/:id', routes.queue.get);
+app.get('/queue/:queue', routes.queue.get);
 
 //CRUD jobs
 app.get('/job',routes.job.list);
