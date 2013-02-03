@@ -1,17 +1,26 @@
 var _ = require("underscore");
 var mail = require('../mailer');
 var models = require('../models');
+var dust = require('dustjs-linkedin')
+	, cons = require('consolidate');
 
 exports.post = function(req, res){
 	console.log(req.query); 
-	console.log(req.query.to); 
+	console.log(req.query.to);
+	console.log(req.query.template); 
+	console.log(req.query.content); 
 
 	//TODO: ideally a proper request from POST
 	var tos = req.query.to || [];
+	var template = req.query.template || "";
+	var content = req.query.content || "";
 
 	if (_.size(tos) != 0 ){
-		creatingJobs(tos, res);
-
+		creatingJobs(res,tos,template,content);
+		var body =  JSON.stringify(tos);
+  		res.setHeader('Content-Type', 'application/json');
+  		res.setHeader('Content-Length', body.length);
+  		res.end(body);
 	}else{
 		doNothing(res);
 	}
@@ -43,7 +52,8 @@ exports.post = function(req, res){
 		});
 	}
 
-	function creatingJobs(tos,res){
+	//TODO: So far only working for ideal scenario
+	function creatingJobs(res,tos,template,content){
 
 		var jobs = [];
 		var input = [];
@@ -61,6 +71,7 @@ exports.post = function(req, res){
 			});
 			job.save(function (err) {
 			  if (err) {
+			  	console.log('err='+err);
 			  	console.log('job save error');
 			  }		  	
 			  else{
@@ -70,36 +81,35 @@ exports.post = function(req, res){
 			});
 			jobs.push(job);
 		});
+		var results = models.EmailTemplate.findOne({'name':template}).select().exec(function(err, template){
 
-		console.log("jobs="+jobs);
-		var queue = new models.EmailQueue({
-			template:'string'
-			, description:'string'
-			, html:'Hello World People!!!!'
-			, status:'active'
-			, dateCreated :new Date()
-			, lastUpdated:new Date()
-			, dateCompleted:new Date()
-			, jobs:jobs});
+			dust.loadSource(template.compiled);
+			
+			dust.render(template.name, {content: content}, function(err, out) {
+				console.log("renderring error="+err);
+  				var queue = new models.EmailQueue({
+					template:'string'
+					, description:'string'
+					, html:out
+					, status:'active'
+					, dateCreated :new Date()
+					, lastUpdated:new Date()
+					, dateCompleted:new Date()
+					, jobs:jobs
+				});
 
-		queue.save(function (err) {
-			if (err){
-				console.log('queue save error');
-			}
-			else{
-				console.log('queue created');
-			}
-		  
+				queue.save(function (err) {
+					if (err){
+						console.log('err='+err);
+						console.log('queue save error');
+					}
+					else{
+						sendEmail(queue);
+						console.log('queue created');
+					}
+	  			});
+			});
+  			
 		});
-		
-		//Delay and start the job non blocking
-		setTimeout(function(){sendEmail(queue);}, 2000);
-
-		var body =  JSON.stringify(tos);
-	  	res.setHeader('Content-Type', 'application/json');
-	  	res.setHeader('Content-Length', body.length);
-	  	res.end(body);
 	}
 };
-
-

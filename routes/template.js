@@ -1,4 +1,7 @@
 var models = require('../models');
+var dust = require('dustjs-linkedin')
+  , cons = require('consolidate');
+
 exports.list = function(req, res){
 	res.locals.session = req.session;
   	var results = models.EmailTemplate.find().select().exec(function(err, data){
@@ -22,9 +25,13 @@ exports.post = function(req, res){
   var name = req.body['name']
   var content = req.body['content'] 
   console.log(req.body);
+
+  var compiled = dust.compile(content,name);
+
   var modelInstance = new models.EmailTemplate({
     name:name
     ,content:content
+    ,compiled:compiled
   });
   modelInstance.save(function (err) {
     if (err) {

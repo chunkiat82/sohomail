@@ -7,7 +7,7 @@ exports.EmailJob = mongoose.model('EmailJob', new Schema({
 	to: String
 	,from: String
 	,subject: String
-	,status:{type: String, enum: ['pending', 'sent', 'failed']}
+	,status:{type: String, enum: ['created', 'sent', 'failed']}
 	,dateCreated:{ type: Date, default: Date.now }
 }), 'email_job');
 
@@ -15,7 +15,7 @@ exports.EmailQueue = mongoose.model('EmailQueue', new Schema({
 	template: String
 	, description: String
 	, html: String
-	, status:{type: String, enum: ['active.', 'inactive.', 'error']}
+	, status:{type: String, enum: ['active', 'inactive', 'error']}
 	, appName:''
 	, dateCreated :{ type: Date, default: Date.now }
 	, lastUpdated:{ type: Date, default: Date.now }
@@ -26,6 +26,7 @@ exports.EmailQueue = mongoose.model('EmailQueue', new Schema({
 exports.EmailTemplate = mongoose.model('EmailTemplate', new Schema({
 	name:String
 	, content : String
+	, compiled : String
 	, dateCreated :{ type: Date, default: Date.now }
 }), 'email_template');
 
