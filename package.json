@@ -13,5 +13,8 @@
     , "consolidate": "*"
     , "connect-mongo": "*"
     , "require-dir": "*"
+    , "crud": "*"
+    , "express-resource": "*"
+    , "lingo": "*"
   }
 }
