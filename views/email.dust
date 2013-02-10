@@ -4,7 +4,7 @@
 
 {<html_body}
 	<h1>{message}</h1>
-	<form action="/template" method="post">
+	<form action="/email" method="post">
     <table>
     	<tr>
     		<td>To</td>

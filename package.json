@@ -17,5 +17,6 @@
     , "express-resource": "*"
     , "lingo": "*"
     , "async": "*"
+    , "jquery": "*"
   }
 }

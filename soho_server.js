@@ -37,7 +37,7 @@ dust.makeBase({
 
 //ACTION
 app.get('/', routes.home.get);
-app.get('/email', routes.email.post);
+app.post('/email', routes.email.post);
 
 //CRUD queue
 app.get('/queue', routes.queue.list);

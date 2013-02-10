@@ -6,54 +6,72 @@ var dust = require('dustjs-linkedin')
 var async=require('async');
 
 exports.post = function(req, res){
-	console.log(req.query); 
-	console.log(req.query.to);
-	console.log(req.query.from);
-	console.log(req.query.subject);
-	console.log(req.query.templateName); 
-	console.log(req.query.content); 
-	var tos = req.query.to || [];
-	var templateName = req.query.templateName || "";
-	var content = req.query.content || "";
-	var from = req.query.from || "noreply@soho.sg";
-	var subject = req.query.subject || "<SOHO>";
-	async.series({
-		getInput:function(next){
+	console.log(req.body); 
+	console.log(req.body.to);
+	console.log(req.body.from);
+	console.log(req.body.subject);
+	console.log(req.body.templateName); 
+	console.log(req.body.content); 
+	var tos = req.body.to || [];
+	var templateName = req.body.templateName || "";
+	var content = req.body.content || "";
+	var from = req.body.from || "noreply@soho.sg";
+	var subject = req.body.subject || "<SOHO>";
+
+	//need to use waterfall async instead
+	async.waterfall([function(next){
+			console.log("validation error33333333");
 			var input = [];
 			if (_.isArray(tos)) 
-				input = tos
+				input = tos = _.filter(tos, function(str){ return str != "" ; });
 			else{
-				input.push(tos);å
+				input.push(tos);
 			}
 			var emailObj ={tos:input, content:content, templateName: templateName, from:from, subject:subject};
 
 			next(null,emailObj);
 		},
-		templateRetrieve:function(next){
-			var emailContent = content;
-			if (templateName != ""){
-				models.EmailTemplate.findOne({'name':templateName}).select().exec(function(err, results){
+		function(arg1,next){
+			var emailObj = arg1;
+			if (_.size(emailObj.tos) != 0 && emailObj && emailObj.content != "" && emailObj.from && emailObj.subject ){
+				next(null,arg1);
+			}
+			else{			
+				console.log("validation error");
+			 	next("validation error",arg1);
+			}
+		},
+		function(arg1,next){
+			var emailContent = arg1.content;
+			if (arg1.templateName && arg1.templateName != ""){				
+				models.EmailTemplate.findOne({'name':arg1.templateName}).select().exec(function(err, results){					
 					handleError(err);				
 					if (results){
-						next(null,results);
+						next(null,arg1);
 					}
-					else{
-						next("template not found",null);					
-					}
-					
+					else{					
+						next("template not found",arg1);					
+					}					
 				});
 			}
 			else{
-				next(null, null);
+				next(null, arg1);
 			}
+		},
+		function(arg1,next){
+			try{
+				JSON.parse(arg1.content);				
+			}catch (err){
+				next("content json error",arg1);
+			}
+			next(null,arg1);			
 		}
-	},
-	function(err,finalResults){
-		var emailObj = finalResults.getInput; 
-
-		if (_.size(tos) != 0 && !err && emailObj && emailObj.content != "" && emailObj.from && emailObj.subject ){
+	],
+	function(err,emailObj){
+		console.log("sdfasdfasdfasdfasdfasd="+JSON.stringify(emailObj));
+		if (!err){
 			startEmailProcess(emailObj);
-			var body =  JSON.stringify({sent:tos});
+			var body =  JSON.stringify({sent:emailObj.tos});
 	  		res.setHeader('Content-Type', 'application/json');
 	  		res.setHeader('Content-Length', body.length);
 	  		res.end(body);
@@ -64,7 +82,7 @@ exports.post = function(req, res){
 	});
 };
 function illegalArugements(req, res){
-	var body =  JSON.stringify({req:req.query,response:'insufficient data'});
+	var body =  JSON.stringify({req:req.body,response:'insufficient data'});
   	res.setHeader('Content-Type', 'application/json');
   	res.setHeader('Content-Length', body.length);
   	res.end(body);
@@ -84,7 +102,7 @@ function handleError(err,results){
 //TODO: So far only working for ideal scenario
 function startEmailProcess(emailObj){
 
-	async.parallel({
+	async.series({
 		jobs:function(next){
 			var jobs = [];			
 			_.each(emailObj.tos, function(value, key, list){
@@ -94,20 +112,21 @@ function startEmailProcess(emailObj){
 					,subject:emailObj.subject
 					,status:'created'
 				});
-				job.save(handleError);
+				job.save(function(err,result){
+					handleError(err);
+				});
 				jobs.push(job);
 			});
 			next(null,jobs);
 		},
 		emailContent:function(next){
 			var emailContent = emailObj.content;
-			if (emailObj.teplateName){
+			if (emailObj.templateName){
 				models.EmailTemplate.findOne({'name':emailObj.templateName}).select().exec(function(err, results){
 					handleError(err);				
 					if (results){
-						dust.loadSource(results.compiled);
-						
-						dust.render(results.name, {content: emailObj.content}, function(err, out) {
+						dust.loadSource(results.compiled);						
+						dust.render(emailObj.templateName,JSON.parse(emailObj.content), function(err, out) {
 							if (err){
 								handleError(err);
 							}else{
@@ -116,6 +135,7 @@ function startEmailProcess(emailObj){
 						});
 					}
 					else{
+						console.log("template not found");
 						next("template not found",emailObj.content);
 					}
 					
@@ -128,8 +148,8 @@ function startEmailProcess(emailObj){
 	},function(err,finalResults){
 		handleError(err);
 		var queue = new models.EmailQueue({
-			template:'string'
-			, description:'string'
+			template:finalResults.templateName
+			, description:''
 			, html:finalResults.emailContent
 			, status:'active'
 			, dateCreated :new Date()
