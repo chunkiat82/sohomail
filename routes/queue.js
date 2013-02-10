@@ -37,7 +37,7 @@ exports.get = function(req, res){
 
 function status(req, res){
   var queues = models.EmailQueue.find({'status':req.param('queue')}).select().exec(function(err, data){
-    var body =  jobFormatter(data);
+    var body =  jsonJobFormatter(data);
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Content-Length', body.length);
     res.end(body);  
@@ -48,7 +48,7 @@ function get(req, res){
   console.log("doing a get");
   var queues = models.EmailQueue.findOne({'_id':req.param('queue')}).select().exec(function(err, data){
     console.log("doing a get1");
-    var body =  jobFormatter(data);
+    var body =  jsonJobFormatter(data);
     console.log("doing a get2");
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Content-Length', body.length);
@@ -56,7 +56,7 @@ function get(req, res){
   });
 }
 
-function jobFormatter(data){
+function jsonJobFormatter(data){
   return JSON.stringify(data,function censor(key, values) {
         if (key == "jobs") {
           var finalValues = [];

@@ -1,0 +1,42 @@
+{>"layouts/main"/}
+
+{<title}{title}{/title}
+
+{<html_body}
+	<h1>{message}</h1>
+	<form action="/template" method="post">
+    <table>
+    	<tr>
+    		<td>To</td>
+    		<td><input type="text" name="to"/><br/>
+                <input type="text" name="to"/><br/>
+                <input type="text" name="to"/><br/>
+                <input type="text" name="to"/><br/>
+                <input type="text" name="to"/>
+            </td>
+    	</tr>
+    	<tr>
+            <td>From</td>
+            <td><input type="text" name="from"/></td>
+        </tr>
+    	<tr>
+            <td>Subject</td>
+            <td><input type="text" name="subject"/></td>
+        </tr>
+        <tr>
+            <td>TemplateName</td>
+            <td><input type="text" name="templateName"/></td>
+        </tr>
+        <tr>
+            <td>Content</td>
+            <td><textarea name="content"></textarea></td>
+        </tr>
+        <tr>
+            <td colspan="2" style="text-align:right">
+                <input type="submit" value="submit"/>
+            </td>
+        </tr>
+    </table>
+{/html_body}
+
+{<copy}{copy|s}{/copy}

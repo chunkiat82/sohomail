@@ -1,0 +1,33 @@
+{>"layouts/main"/}
+
+{<title}{title}{/title}
+
+{<html_body}
+	<h1>{message}</h1>
+	<form action="/template" method="post">
+    <table>
+    	<tr>
+    		<td>
+    			Name of Email Template
+    		</td>
+    		<td>
+    			<input type="text" name="name"/>
+    		</td>
+    	</tr>
+    	<tr>
+    		<td>
+    			Dust Template Object
+    		</td>
+    		<td>
+    			<textarea name="content"></textarea>
+    		</td>
+    	</tr>
+    	<tr>
+    		<td colspan="2" style="text-align:right">
+    			<input type="submit" value="submit"/>
+    		</td>
+    	</tr>
+    </table>
+{/html_body}
+
+{<copy}{copy|s}{/copy}

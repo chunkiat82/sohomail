@@ -16,5 +16,6 @@
     , "crud": "*"
     , "express-resource": "*"
     , "lingo": "*"
+    , "async": "*"
   }
 }
