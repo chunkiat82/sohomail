@@ -1,7 +1,37 @@
 {>layout/}
+{<title}
+{title}
+{/title}
 {<content}
-<div style="width:100px;margin:0 auto;">
-	<a href="/queue">Queues</a>
+<div class="box box-50 altbox"><!-- .altbox for alternative box's color -->
+	<div class="boxin">
+		<div class="header">
+			<h3>Queue</h3>
+			<a class="button" href="#">New Email Queue&nbsp;»</a><!-- Action button in the header of the box -->
+			<ul><!-- Tabs in the box's header -->
+				<li><a href="#" class="active">Active</a></li><!-- .active for active tab -->
+			</ul>
+		</div>
+		<div class="content">
+			<table cellspacing="0">
+				<thead>
+					<tr>
+						<th>Queue ID</th>
+						<td class="tc">App Name</td>
+						<td class="tc">Created</td>
+					</tr>
+				</thead>
+				<tbody>
+					{#queues}
+					<tr class="first"><!-- .first for first row of the table (only if there is thead) -->
+						<th><a href="/queue/{id}">{id}</a></th>
+						<td class="tc">{name}</td><!-- a.ico-comms for comment-like backgrounds -->
+						<td>{dateCreated}</td>
+					</tr>
+					{/queues}
+				</tbody>
+			</table>
+		</div>
+	</div>
 </div>
-<footer style="width:300px;margin:0 auto;">SOHO Mailing Service</footer>
 {/content}

@@ -40,14 +40,14 @@ app.get('/', routes.home.get);
 app.post('/email', routes.email.post);
 
 //CRUD queue
-app.get('/queue', routes.queue.list);
+app.get('/queues', routes.queue.list);
 app.get('/queue/:queue', routes.queue.get);
 
 //CRUD jobs
-app.get('/job',routes.job.list);
+app.get('/jobs',routes.job.list);
 app.get('/job/:id',routes.job.get);
 
-app.get('/template',routes.template.list);
+app.get('/templates',routes.template.list);
 app.get('/template/:id',routes.template.get);
 app.post('/template',routes.template.post);
 

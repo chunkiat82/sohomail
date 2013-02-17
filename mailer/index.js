@@ -9,8 +9,6 @@ var smtpTransport = nodemailer.createTransport("SMTP",{
     }
 });
 exports.sendMail = function(data){
-	
-	
 	// setup e-mail data with unicode symbols
 
 	var to = data.to;
