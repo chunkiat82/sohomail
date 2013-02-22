@@ -19,15 +19,14 @@ exports.post = function(req, res){
 	var subject = req.body.subject || "<SOHO>";
 
 	//need to use waterfall async instead
-	async.waterfall([function(next){
-			console.log("validation error33333333");
+	async.waterfall([function(next){			
 			var input = [];
 			if (_.isArray(tos)) 
 				input = tos = _.filter(tos, function(str){ return str != "" ; });
 			else{
 				input.push(tos);
 			}
-			var emailObj ={tos:input, content:content, templateName: templateName, from:from, subject:subject};
+			var emailObj = new models.EmailRawRequest({tos:input, content:content, templateName: templateName, from:from, subject:subject});
 
 			next(null,emailObj);
 		},
@@ -62,19 +61,29 @@ exports.post = function(req, res){
 			try{
 				JSON.parse(arg1.content);				
 			}catch (err){
-				next("content json error",arg1);
+				console.log("content is not a json");
+				return next(null,arg1);
 			}
 			next(null,arg1);			
 		}
 	],
 	function(err,emailObj){
-		console.log("sdfasdfasdfasdfasdfasd="+JSON.stringify(emailObj));
+		console.log("Email Object="+JSON.stringify(emailObj));
 		if (!err){
-			startEmailProcess(emailObj);
-			var body =  JSON.stringify({sent:emailObj.tos});
-	  		res.setHeader('Content-Type', 'application/json');
-	  		res.setHeader('Content-Length', body.length);
-	  		res.end(body);
+			// startEmailProcess(emailObj);
+			emailObj.save(function(err,result){
+				if ( !err ) {
+					var body =  JSON.stringify({sent:emailObj.tos});
+			  		res.setHeader('Content-Type', 'application/json');
+			  		res.setHeader('Content-Length', body.length);
+			  		return res.end(body);					
+				}
+				res.status(500);
+			});
+			// var body =  JSON.stringify({sent:emailObj.tos});
+	  // 		res.setHeader('Content-Type', 'application/json');
+	  // 		res.setHeader('Content-Length', body.length);
+	  // 		res.end(body);
 		}else{
 			handleError(err);
 			illegalArugements(req,res);

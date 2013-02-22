@@ -3,6 +3,14 @@ var mongoose = require('mongoose')
 
 mongoose.connect('localhost', 'soho_mail');
 
+exports.EmailRawRequest = mongoose.model('EmailRawRequest', new Schema({
+	tos: [String]
+	,from: String
+	,subject: String
+	,templateName: String
+	,content: String
+}), 'email_raw_request');
+
 exports.EmailJob = mongoose.model('EmailJob', new Schema({
 	to: String
 	,from: String
@@ -15,7 +23,7 @@ exports.EmailQueue = mongoose.model('EmailQueue', new Schema({
 	template: String
 	, description: String
 	, html: String
-	, status:{type: String, enum: ['active', 'inactive', 'error']}
+	, status:{type: String, enum: ['active', 'complete', 'error']}
 	, appName:''
 	, dateCreated :{ type: Date, default: Date.now }
 	, lastUpdated:{ type: Date, default: Date.now }

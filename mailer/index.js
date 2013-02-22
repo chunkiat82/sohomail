@@ -29,7 +29,7 @@ exports.sendMail = function(data){
 	        console.log(error);
 	        console.log(mailOptions);
 	    }else{
-	        console.log("Message sent: " + response.message);
+	        console.log("Message sent("+to+"): " + response.message);
 	    }
 
 	    // if you don't want to use this transport object anymore, uncomment following line
