@@ -89,6 +89,7 @@ function pollRawEmailRequest(){
 				, tos: emailObj.tos
 				, from: emailObj.from
 				, content: emailObj.content
+				, statusUpdateURL: emailObj.statusUpdateURL
 				, description:''
 				, html:finalResults.emailContent
 				, status:'active'

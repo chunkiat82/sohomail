@@ -23,7 +23,7 @@ exports.post = [
 				else{
 					input.push(tos);
 				}
-				var emailObj = new models.EmailRawRequest({tos:input, content:content, templateName: templateName, from:from, subject:subject, owner: req.user._id});
+				var emailObj = new models.EmailRawRequest({statusUpdateURL: req.body.statusUpdateURL,tos:input, content:content, templateName: templateName, from:from, subject:subject, owner: req.user._id});
 
 				next(null,emailObj);
 			},

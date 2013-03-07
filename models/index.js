@@ -7,6 +7,7 @@ exports.EmailRawRequest = mongoose.model('EmailRawRequest', new Schema({
 	,subject: String
 	,templateName: String
 	,content: String
+	,statusUpdateURL: String
 	, owner: {type: Schema.Types.ObjectId, ref: 'User'}
 	, queue: {type:Schema.Types.ObjectId, ref: 'EmailQueue'}
 }), 'email_raw_request');
@@ -26,6 +27,7 @@ exports.EmailQueue = mongoose.model('EmailQueue', new Schema({
 	, subject: String
 	, from: String
 	, content: String
+	,statusUpdateURL: String
 	, description: String
 	, html: String
 	, status:{type: String, enum: ['active', 'complete', 'error']}
