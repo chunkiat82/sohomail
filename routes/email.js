@@ -3,93 +3,90 @@ var mail = require('../mailer');
 var models = require('../models');
 var dust = require('dustjs-linkedin')
 	, cons = require('consolidate');
-var async=require('async');
+var async=require('async'),
+		passport = require("passport");
 
-exports.post = function(req, res){
-	console.log(req.body); 
-	console.log(req.body.to);
-	console.log(req.body.from);
-	console.log(req.body.subject);
-	console.log(req.body.templateName); 
-	console.log(req.body.content); 
-	var tos = req.body.to || [];
-	var templateName = req.body.templateName || "";
-	var content = req.body.content || "";
-	var from = req.body.from || "noreply@soho.sg";
-	var subject = req.body.subject || "<SOHO>";
+exports.post = [
+  passport.authenticate(['basic', 'oauth2-client-password'], { session: false }),
+	function(req, res){
+		var tos = req.body.to || [];
+		var templateName = req.body.templateName || "";
+		var content = req.body.content || "";
+		var from = req.body.from || "noreply@soho.sg";
+		var subject = req.body.subject || "<SOHO>";
 
-	//need to use waterfall async instead
-	async.waterfall([function(next){			
-			var input = [];
-			if (_.isArray(tos)) 
-				input = tos = _.filter(tos, function(str){ return str != "" ; });
-			else{
-				input.push(tos);
-			}
-			var emailObj = new models.EmailRawRequest({tos:input, content:content, templateName: templateName, from:from, subject:subject});
-
-			next(null,emailObj);
-		},
-		function(arg1,next){
-			var emailObj = arg1;
-			if (_.size(emailObj.tos) != 0 && emailObj && emailObj.content != "" && emailObj.from && emailObj.subject ){
-				next(null,arg1);
-			}
-			else{			
-				console.log("validation error");
-			 	next("validation error",arg1);
-			}
-		},
-		function(arg1,next){
-			var emailContent = arg1.content;
-			if (arg1.templateName && arg1.templateName != ""){				
-				models.EmailTemplate.findOne({'name':arg1.templateName}).select().exec(function(err, results){					
-					handleError(err);				
-					if (results){
-						next(null,arg1);
-					}
-					else{					
-						next("template not found",arg1);					
-					}					
-				});
-			}
-			else{
-				next(null, arg1);
-			}
-		},
-		function(arg1,next){
-			try{
-				JSON.parse(arg1.content);				
-			}catch (err){
-				console.log("content is not a json");
-				return next(null,arg1);
-			}
-			next(null,arg1);			
-		}
-	],
-	function(err,emailObj){
-		console.log("Email Object="+JSON.stringify(emailObj));
-		if (!err){
-			// startEmailProcess(emailObj);
-			emailObj.save(function(err,result){
-				if ( !err ) {
-					var body =  JSON.stringify({sent:emailObj.tos});
-			  		res.setHeader('Content-Type', 'application/json');
-			  		res.setHeader('Content-Length', body.length);
-			  		return res.end(body);					
+		//need to use waterfall async instead
+		async.waterfall([function(next){			
+				var input = [];
+				if (_.isArray(tos)) 
+					input = tos = _.filter(tos, function(str){ return str != "" ; });
+				else{
+					input.push(tos);
 				}
-				res.status(500);
-			});
-			// var body =  JSON.stringify({sent:emailObj.tos});
-	  // 		res.setHeader('Content-Type', 'application/json');
-	  // 		res.setHeader('Content-Length', body.length);
-	  // 		res.end(body);
-		}else{
-			handleError(err);
-			illegalArugements(req,res);
-		}
-	});
-};
+				var emailObj = new models.EmailRawRequest({tos:input, content:content, templateName: templateName, from:from, subject:subject, owner: req.user._id});
+
+				next(null,emailObj);
+			},
+			function(arg1,next){
+				var emailObj = arg1;
+				if (_.size(emailObj.tos) != 0 && emailObj && emailObj.from && emailObj.subject ){
+					next(null,arg1);
+				}
+				else{
+					console.log("validation error");
+				 	next("validation error",arg1);
+				}
+			},
+			function(arg1,next){
+				var emailContent = arg1.content;
+				if (arg1.templateName && arg1.templateName != ""){
+				if ( arg1.content == "" ) { arg1.content = "{}"; }			
+					models.EmailTemplate.findOne({'name':arg1.templateName}).select().exec(function(err, results){					
+						handleError(err);				
+						if (results){
+							next(null,arg1);
+						}
+						else{					
+							next("template not found",arg1);				
+						}					
+					});
+				} else if ( !emailObj.content || emailObj.content == "") {
+					next("template and content cannot be both empty");
+				} else{
+					next(null, arg1);
+				}
+			},
+			function(arg1,next){
+				try{
+					JSON.parse(arg1.content);
+				}catch (err){
+					console.log("content is not a json");
+					return next(null,arg1);
+				}
+				next(null,arg1);			
+			}
+		],
+		function(err,emailObj){
+			console.log("Email Object="+JSON.stringify(emailObj));
+			if (!err){
+				// startEmailProcess(emailObj);
+				emailObj.save(function(err,result){
+					if ( !err ) {
+						return res.json(200, {_id: emailObj._id});
+					}
+					res.json(500, err);
+				});
+				// var body =  JSON.stringify({sent:emailObj.tos});
+		  // 		res.setHeader('Content-Type', 'application/json');
+		  // 		res.setHeader('Content-Length', body.length);
+		  // 		res.end(body);
+			}else{
+				handleError(err);
+				illegalArugements(req,res);
+			}
+		});
+	}
+];
 function illegalArugements(req, res){
 	var body =  JSON.stringify({req:req.body,response:'insufficient data'});
   	res.setHeader('Content-Type', 'application/json');
@@ -131,7 +128,7 @@ function startEmailProcess(emailObj){
 		emailContent:function(next){
 			var emailContent = emailObj.content;
 			if (emailObj.templateName){
-				models.EmailTemplate.findOne({'name':emailObj.templateName}).select().exec(function(err, results){
+				models.EmailTemplate.findOne({'owner':emailObj.owner, 'name':emailObj.templateName}).select().exec(function(err, results){
 					handleError(err);				
 					if (results){
 						dust.loadSource(results.compiled);						

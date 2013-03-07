@@ -1,18 +1,51 @@
-var models = require('../models');
-exports.list = function(req, res){
-	res.locals.session = req.session;
-  	var results = models.EmailJob.find().select().exec(function(err, data){
-		var body =  JSON.stringify(data,null, 4);
-  		res.setHeader('Content-Type', 'application/json');
-  		res.setHeader('Content-Length', body.length);
-  		res.end(body);	
-	});
-};
-exports.get = function(req, res){
-	var results = models.EmailJob.findOne({'_id':req.param('id')}).select().exec(function(err, data){
-		var body =  JSON.stringify(data,null, 4);
-  		res.setHeader('Content-Type', 'application/json');
-  		res.setHeader('Content-Length', body.length);
-  		res.end(body);	
-	});
-};
+var models = require('../models'),
+    passport = require("passport");
+
+exports.list = [
+  passport.authenticate(['basic', 'oauth2-client-password'], { session: false }),
+  function(req, res){
+		models.EmailQueue.find({owner:req.user._id}, "status rawrequest").lean(true).exec(function(err, data){
+      if ( err ) {
+        return res.json(500, err);
+      }
+      models.EmailRawRequest.find({owner:req.user._id}, "_id").lean(true).exec(function(err, raw) {
+        if ( err ) {
+          return res.json(500, err);
+        }
+        data.map(function(d){
+          d._id = d.rawrequest;
+          delete d.rawrequest;
+          return d;
+        });
+        raw.map(function(r){
+          r.status = "processing";
+          return r;
+        });
+        Array.prototype.push.apply(raw, data)
+        res.json(raw);
+      });
+  	});
+  }
+]
+exports.get = [
+  passport.authenticate(['basic', 'oauth2-client-password'], { session: false }),
+  function(req, res){
+    models.EmailQueue.find({owner:req.user._id, _id:req.param('id')}, "tos from subject content template").lean(true).exec(function(err, data){
+      if ( err ) {
+        return res.json(500, err);
+      }
+      if ( !data ) {
+        return models.EmailRawRequest.find({owner:req.user._id}, "-_id").lean(true).exec(function(err, raw) {
+          if ( err ) {
+            return res.json(500, err);
+          }
+          if ( !data ) {
+            return res.json(404, {});
+          }
+          res.json(raw);
+        });
+      }
+      res.json(data);
+    });
+  }
+]

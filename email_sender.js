@@ -1,6 +1,7 @@
 var models = require('./models'),
 	async = require('async'),
 	mail = require('./mailer');
+require("mongoose").connect('localhost', 'soho_mail');
 setTimeout(resetAndPollEmailQueue, 1000);
 function logError(comment, err) {
 	console.log("You have a freaking error("+err+"): "+comment);

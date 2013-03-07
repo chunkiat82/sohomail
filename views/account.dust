@@ -1,0 +1,19 @@
+{>"layouts/main"/}
+{<html_body}
+	<h1>Your account information</h1>
+	<dl>
+		<dt>Email</dt>
+		<dd>{user.email}</dd>
+	</dl>
+	<h2>API Information</h2>
+	<dl>
+		<dt>ID</dt>
+		<dd>{user._id}</dd>
+		<dt>secret</dt>
+		{?user.api_secret}
+			<dd>{user.api_secret}</dd>
+		{:else}
+			<dd><form action="/me/secret" method="post"><input type="submit" value="request for one"/></form></dd>
+		{/user.api_secret}
+	</dl>
+{/html_body}

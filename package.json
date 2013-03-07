@@ -18,5 +18,14 @@
     , "lingo": "*"
     , "async": "*"
     , "jquery": "*"
+    , "oauth2orize": "*"
+    , "node-uuid": "*"
+    , "passport": "*"
+    , "passport-local": "*"
+    , "passport-http": "*"
+    , "passport-oauth2-client-password": "*"
+    , "connect-ensure-login": "*"
+    , "passport-http-bearer": "*"
+    , "flashify": "*"
   }
 }

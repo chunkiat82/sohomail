@@ -1,5 +1,7 @@
 var models = require('./models'),
-	async = require('async');
+	async = require('async'),
+	dust = require('dustjs-linkedin');
+require("mongoose").connect('localhost', 'soho_mail');
 setTimeout(resetAndPollRawEmailRequest, 1000);
 function logError(comment, err) {
 	console.log("You have a freaking error("+err+"): "+comment);
@@ -16,10 +18,10 @@ function pollRawEmailRequest(){
 	}
 	models.EmailRawRequest.findOne({}).exec(function(err, emailObj) {
 		if ( err ) {
-			return logError("Unable to find one", err);
+			logError("Unable to find one", err);
+			return setTimeout(resetAndPollRawEmailRequest, 1000);
 		}
 		if ( !emailObj ) {
-			console.log("queue empty");
 			return setTimeout(resetAndPollRawEmailRequest, 1000);
 		}
 		async.series({
@@ -38,7 +40,8 @@ function pollRawEmailRequest(){
 						to:t_to
 						,from: emailObj.from
 						,subject:emailObj.subject
-						,status:'created'
+						,status:'created',
+						owner: emailObj.owner
 					});
 					job.save(function(err) {
 						if ( err ) {
@@ -53,12 +56,14 @@ function pollRawEmailRequest(){
 				var emailContent = emailObj.content;
 				if (emailObj.templateName){
 					models.EmailTemplate.findOne({'name':emailObj.templateName}).select().exec(function(err, results){
-						logError("Error damn it",err);				
+						if ( err ) {
+							next(err);
+						}
 						if (results){
-							dust.loadSource(results.compiled);						
+							dust.loadSource(results.compiled);		
 							dust.render(emailObj.templateName,JSON.parse(emailObj.content), function(err, out) {
 								if (err){
-									logError("Error damn it",err);
+									next(err);
 								}else{
 									next(null,out);
 								}						
@@ -77,10 +82,13 @@ function pollRawEmailRequest(){
 			}
 		},function(err,finalResults){
 			if ( err) {
-				logError("Error damn it",err);
+				return logError("Error damn it",err);
 			}
 			var queue = new models.EmailQueue({
 				template:finalResults.templateName
+				, tos: emailObj.tos
+				, from: emailObj.from
+				, content: emailObj.content
 				, description:''
 				, html:finalResults.emailContent
 				, status:'active'
@@ -88,6 +96,8 @@ function pollRawEmailRequest(){
 				, lastUpdated:new Date()
 				, dateCompleted:new Date()
 				, jobs:finalResults.jobs
+				, rawrequest: emailObj._id
+				, owner: emailObj.owner
 			});
 
 			queue.save(function(err,results){
