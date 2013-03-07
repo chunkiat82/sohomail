@@ -50,7 +50,7 @@ exports.post = [
 							next("template not found",arg1);				
 						}					
 					});
-				} else if ( !emailObj.content || emailObj.content == "") {
+				} else if ( !emailContent || emailContent === "") {
 					next("template and content cannot be both empty");
 				} else{
 					next(null, arg1);
