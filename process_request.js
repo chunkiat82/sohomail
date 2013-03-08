@@ -114,6 +114,7 @@ function pollRawEmailRequest(){
 						method:'POST',
 						agent: false
 					});
+					req.headers['Content-Type'] = "text/json"
 					req.write(JSON.stringify({id:emailObj._id, status: queue.status}));
 					req.end();
 				}
