@@ -4,7 +4,7 @@ var dust = require('dustjs-linkedin')
     passport = require('passport');
 
 exports.list = [
-  passport.authenticate(['basic', 'oauth2-client-password'], { session: false }),
+  passport.authenticate(['basic', 'oauth2-client-password', 'header'], { session: false }),
   function(req, res){
     models.EmailTemplate.find({
         _id: {
@@ -20,7 +20,7 @@ exports.list = [
 ]
 
 exports.get = [
-  passport.authenticate(['basic', 'oauth2-client-password'], { session: false }),
+  passport.authenticate(['basic', 'oauth2-client-password', 'header'], { session: false }),
   function(req, res){
     models.EmailTemplate.findOne({'_id':req.param('id'), owner: req.user._id}, function(err, data){
       if ( err ) {
@@ -35,7 +35,7 @@ exports.get = [
 ]
 
 exports.post = [
-  passport.authenticate(['basic', 'oauth2-client-password'], { session: false }),
+  passport.authenticate(['basic', 'oauth2-client-password', 'header'], { session: false }),
   function(req, res){
     var name = req.body.name,
         content = req.body.content,

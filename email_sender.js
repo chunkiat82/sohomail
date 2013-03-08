@@ -55,7 +55,25 @@ function sendEmail(queue, cb){
 				if ( job ) {
 					mail.sendMail({'to':job.to, 'from':job.from, 'subject':job.subject ,'html':queue.html});
 					job.status='sent';
-					job.save();
+					job.save(function(err){
+						if ( err ) {
+							return console.log("now this would be serious, it failed while updating status");
+						}
+						if ( queue.statusUpdateURL ) {
+							var url = require("url").parse(queue.statusUpdateURL);
+							var req = require('http').request({
+								hostname: url.host,
+								port: url.port,
+								path: url.path,
+								method:'POST',
+								agent: false
+							});
+							// put something here to track if the final status has been updated properly, if it is not, retry maybe up to 5 times or something in 5 minute intervals
+							// and also track if the update has been failed, so it can be seen on the interface
+							req.write(JSON.stringify({id:queue.rawrequest, status: queue.status}));
+							req.end();
+						}
+					});
 				} else {
 					console.log("couldnt find job");
 				}

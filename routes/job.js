@@ -1,8 +1,9 @@
+
 var models = require('../models'),
     passport = require("passport");
 
 exports.list = [
-  passport.authenticate(['basic', 'oauth2-client-password'], { session: false }),
+  passport.authenticate(['basic', 'oauth2-client-password', 'header'], { session: false }),
   function(req, res){
 		models.EmailQueue.find({owner:req.user._id}, "status rawrequest").lean(true).exec(function(err, data){
       if ( err ) {
@@ -28,7 +29,7 @@ exports.list = [
   }
 ]
 exports.get = [
-  passport.authenticate(['basic', 'oauth2-client-password'], { session: false }),
+  passport.authenticate(['basic', 'oauth2-client-password', 'header'], { session: false }),
   function(req, res){
     models.EmailQueue.find({owner:req.user._id, _id:req.param('id')}, "tos from subject content template").lean(true).exec(function(err, data){
       if ( err ) {

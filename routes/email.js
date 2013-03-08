@@ -7,7 +7,7 @@ var async=require('async'),
 		passport = require("passport");
 
 exports.post = [
-  passport.authenticate(['basic', 'oauth2-client-password'], { session: false }),
+  passport.authenticate(['basic', 'oauth2-client-password', 'header'], { session: false }),
 	function(req, res){
 		var tos = req.body.to || [];
 		var templateName = req.body.templateName || "";

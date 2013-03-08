@@ -105,6 +105,18 @@ function pollRawEmailRequest(){
 				if (err){
 					logError("Failed to save to email queue", err);
 				}
+				if ( emailObj.statusUpdateURL ) {
+					var url = require("url").parse(emailObj.statusUpdateURL);
+					var req = require('http').request({
+						hostname: url.host,
+						port: url.port,
+						path: url.path,
+						method:'POST',
+						agent: false
+					});
+					req.write(JSON.stringify({id:emailObj._id, status: queue.status}));
+					req.end();
+				}
 				emailObj.remove(function(err){
 					if ( err ) {
 						logError("Failed to remove", err);
