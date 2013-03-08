@@ -65,11 +65,13 @@ function sendEmail(queue, cb){
 								port: url.port,
 								path: url.path,
 								method:'POST',
-								agent: false
+								agent: false,
+								headers: {
+									"Content-Type": "text/json"
+								}
 							});
 							// put something here to track if the final status has been updated properly, if it is not, retry maybe up to 5 times or something in 5 minute intervals
 							// and also track if the update has been failed, so it can be seen on the interface
-							req.headers['Content-Type'] = "text/json"
 							req.write(JSON.stringify({id:queue.rawrequest, status: queue.status}));
 							req.end();
 						}
