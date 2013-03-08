@@ -25,6 +25,23 @@ function pollEmailQueue(){
 			return setTimeout(resetAndPollEmailQueue, 1000);
 		}
 		sendEmail(emailQueue, function(err) {
+			if ( emailQueue.statusUpdateURL ) {
+				var url = require("url").parse(emailQueue.statusUpdateURL);
+				var req = require('http').request({
+					hostname: url.host,
+					port: url.port,
+					path: url.path,
+					method:'POST',
+					agent: false,
+					headers: {
+						"Content-Type": "text/json"
+					}
+				});
+				// put something here to track if the final status has been updated properly, if it is not, retry maybe up to 5 times or something in 5 minute intervals
+				// and also track if the update has been failed, so it can be seen on the interface
+				req.write(JSON.stringify({id:queue.rawrequest, status: queue.status}));
+				req.end();
+			}
 			pollEmailQueue();
 		});
 	});
@@ -57,23 +74,6 @@ function sendEmail(queue, cb){
 					job.save(function(err){
 						if ( err ) {
 							return console.log("now this would be serious, it failed while updating status");
-						}
-						if ( queue.statusUpdateURL ) {
-							var url = require("url").parse(queue.statusUpdateURL);
-							var req = require('http').request({
-								hostname: url.host,
-								port: url.port,
-								path: url.path,
-								method:'POST',
-								agent: false,
-								headers: {
-									"Content-Type": "text/json"
-								}
-							});
-							// put something here to track if the final status has been updated properly, if it is not, retry maybe up to 5 times or something in 5 minute intervals
-							// and also track if the update has been failed, so it can be seen on the interface
-							req.write(JSON.stringify({id:queue.rawrequest, status: queue.status}));
-							req.end();
 						}
 					});
 				} else {
