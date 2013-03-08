@@ -112,12 +112,9 @@ function pollRawEmailRequest(){
 						port: url.port,
 						path: url.path,
 						method:'POST',
-						agent: false,
-							headers: {
-								"Content-Type": "text/json"
-							}
+						agent: false
 					});
-					req.write(JSON.stringify({id:emailObj._id, status: queue.status}));
+					req.write(require('querystring').stringify({id:emailObj._id, status: queue.status}));
 					req.end();
 				}
 				emailObj.remove(function(err){

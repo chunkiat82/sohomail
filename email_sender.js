@@ -32,14 +32,11 @@ function pollEmailQueue(){
 					port: url.port,
 					path: url.path,
 					method:'POST',
-					agent: false,
-					headers: {
-						"Content-Type": "text/json"
-					}
+					agent: false
 				});
 				// put something here to track if the final status has been updated properly, if it is not, retry maybe up to 5 times or something in 5 minute intervals
 				// and also track if the update has been failed, so it can be seen on the interface
-				req.write(JSON.stringify({id:emailQueue.rawrequest, status: emailQueue.status}));
+				req.write(require('querystring').stringify({id:emailQueue.rawrequest, status: emailQueue.status}));
 				req.end();
 			}
 			pollEmailQueue();
