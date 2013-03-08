@@ -22,7 +22,6 @@ function pollEmailQueue(){
 			return logError("Unable to find one", err);
 		}
 		if ( !emailQueue ) {
-			console.log("queue empty");
 			return setTimeout(resetAndPollEmailQueue, 1000);
 		}
 		sendEmail(emailQueue, function(err) {
