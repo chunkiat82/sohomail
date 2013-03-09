@@ -7,9 +7,7 @@ exports.list = [
   passport.authenticate(['basic', 'oauth2-client-password', 'header'], { session: false }),
   function(req, res){
     models.EmailTemplate.find({
-        _id: {
-          $in: req.user.templates
-        }
+        owner: req.user._id
       }, "name", function(err, templates) {
         if ( err ) {
           res.json(500, {});
@@ -37,6 +35,7 @@ exports.get = [
 exports.post = [
   passport.authenticate(['basic', 'oauth2-client-password', 'header'], { session: false }),
   function(req, res){
+    
     var name = req.body.name,
         content = req.body.content,
         compiled = dust.compile(content, name),

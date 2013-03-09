@@ -40,12 +40,15 @@ exports.EmailQueue = mongoose.model('EmailQueue', new Schema({
 	, owner: {type: Schema.Types.ObjectId, ref: 'User'}
 }), 'email_queue');
 
-exports.EmailTemplate = mongoose.model('EmailTemplate', new Schema({
-	name:String
+// should make a compound name and owner key and check on uniqueness
+var templateSchema = new Schema({
+	name:{type: String, required: true}
 	, content : String
 	, compiled : String
 	, dateCreated :{ type: Date, default: Date.now }
 	, owner: {type: Schema.Types.ObjectId, ref: 'User'}
-}), 'email_template');
+});
+templateSchema.index({name:1, owner:1}, {unique:true});
+exports.EmailTemplate = mongoose.model('EmailTemplate', templateSchema, 'email_template');
 
 
