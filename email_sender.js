@@ -80,8 +80,7 @@ function sendEmail(queue, templateName, template, cb){
 			if (err){
 				console.log("dust is ill formed and cannot be rendered", err);
 			}else{
-				console.log("here?");
-				// mail.sendMail({'to':job.to, 'from':queue.from, 'subject':queue.subject ,'html':html});
+				mail.sendMail({'to':job.to, 'from':queue.from, 'subject':queue.subject ,'html':html});
 				job.status='sent';
 				job.save(function(err){
 					if ( err ) {
