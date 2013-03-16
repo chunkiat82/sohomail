@@ -27,5 +27,8 @@
     , "connect-ensure-login": "*"
     , "passport-http-bearer": "*"
     , "flashify": "*"
+    , "formidable": "*"
+    , "temp": "*"
+    , "MD5": "*"
   }
 }

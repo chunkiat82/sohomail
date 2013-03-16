@@ -1,6 +1,7 @@
 var models = require('./models'),
 	async = require('async'),
-	mail = require('./mailer');
+	mail = require('./mailer'),
+	dust = require('dustjs-linkedin');
 require("mongoose").connect('localhost', 'soho_mail');
 setTimeout(resetAndPollEmailQueue, 1000);
 function logError(comment, err) {
@@ -24,59 +25,87 @@ function pollEmailQueue(){
 		if ( !emailQueue ) {
 			return setTimeout(resetAndPollEmailQueue, 1000);
 		}
-		sendEmail(emailQueue, function(err) {
-			if ( emailQueue.statusUpdateURL ) {
-				var url = require("url").parse(emailQueue.statusUpdateURL);
-				var req = require('http').request({
-					hostname: url.host,
-					port: url.port,
-					path: url.path,
-					method:'POST',
-					agent: false
-				});
-				// put something here to track if the final status has been updated properly, if it is not, retry maybe up to 5 times or something in 5 minute intervals
-				// and also track if the update has been failed, so it can be seen on the interface
-				req.write(require('querystring').stringify({id:emailQueue.rawrequest, status: emailQueue.status}));
-				req.end();
-			}
-			pollEmailQueue();
-		});
+		function callSendMail(templateName, template) {
+			sendEmail(emailQueue, templateName, template, function(err) {
+				if ( emailQueue.statusUpdateURL ) {
+					console.log("update status", emailQueue.statusUpdateURL);
+					var url = require("url").parse(emailQueue.statusUpdateURL);
+					var req = require('http').request({
+						hostname: url.hostname,
+						port: url.port,
+						path: url.path,
+						method:'POST',
+						agent: false
+					});
+					// put something here to track if the final status has been updated properly, if it is not, retry maybe up to 5 times or something in 5 minute intervals
+					// and also track if the update has been failed, so it can be seen on the interface
+					req.write(require('querystring').stringify({id:emailQueue.rawrequest.toString(), status: emailQueue.status}));
+					req.end();
+				}
+				pollEmailQueue();
+			});
+		}
+		if ( emailQueue.templateName ) {
+			// retrieve template, and then call send
+			models.EmailTemplate.findOne({'name':emailQueue.templateName}).select().exec(function(err, result){
+				callSendMail(result.name, result.compiled); // TODO, find out if there is a problem when two sourc eof hte same name is compiled
+				// and if it will hog on the memory if we keep loading more templates
+			});
+		} else {
+			callSendMail(emailQueue.rawrequest, emailQueue.content);
+		}
 	});
 }
 
-function sendEmail(queue, cb){
+function sendEmail(queue, templateName, template, cb){
 	console.log("Email Start Sending");
-	var semaphore = 0;
+	var semaphore = 0, closed = false;
 	function handleSemaphore() {
-		if( --semaphore <= 0 ) {
+		if( semaphore <= 0 && closed) {
 			queue.set('status', 'complete');
 			queue.save(function(err){
 				cb();
 			});
 		}
 	}
-	queue.jobs.forEach(function(value, key, list){
+	dust.loadSource(template);
+	var stream = models.EmailJob
+		.find({ 'queue':queue._id })
+		.select('to data status')
+		.where('status').ne('sent')
+		.stream();
+	function sendMail(job){
+
+		dust.render(templateName,job.data, function(err, html) {
+			if (err){
+				console.log("dust is ill formed and cannot be rendered", err);
+			}else{
+				console.log("here?");
+				// mail.sendMail({'to':job.to, 'from':queue.from, 'subject':queue.subject ,'html':html});
+				job.status='sent';
+				job.save(function(err){
+					if ( err ) {
+						return console.log("now this would be serious, it failed while updating status");
+					}
+					--semaphore;
+					handleSemaphore();
+				});
+			}						
+		});
+	}
+	stream.on('data', function(job){
 		++semaphore;
-		models.EmailJob
-			.findOne({ '_id':value })
-			.select('to from subject status')
-			.where('status').ne('sent')
-			.exec(function(err,job){
-				if ( err ) {
-					logError("failed to read email job", err);
-				}
-				if ( job ) {
-					mail.sendMail({'to':job.to, 'from':job.from, 'subject':job.subject ,'html':queue.html});
-					job.status='sent';
-					job.save(function(err){
-						if ( err ) {
-							return console.log("now this would be serious, it failed while updating status");
-						}
-					});
-				} else {
-					console.log("couldnt find job");
-				}
-				handleSemaphore();
-			});
+		if ( job ) {
+			sendMail(job);
+		} else {
+			console.log("couldnt find job");
+			--semaphore;
+		}
+		handleSemaphore();
+	}).on('error', function(err){
+		console.log(err);
+	}).on('close', function(){
+		closed = true;
+		handleSemaphore();
 	});
 }

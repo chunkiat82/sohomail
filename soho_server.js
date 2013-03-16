@@ -15,15 +15,21 @@ var requireDir = require('require-dir'),
 
 require("mongoose").connect('localhost', 'soho_mail');
 
+if ( !require('fs').existsSync(__dirname+"/raw/")) {
+    require('fs').mkdirSync(__dirname+"/raw/");    
+}
+
+
 // assign the dust engine to .dust files
 app.engine('dust', cons.dust);
 app.configure(function(){
     app.set('port', process.env.SOHOMAILPORT || 3001);
     app.set('view engine', 'dust');
     app.set('views', __dirname + '/views');
+    app.set('root', __dirname);
     app.use(express.static(__dirname + '/public', {redirect: false}));
-
-    app.use(express.bodyParser());
+    app.use(passport.initialize());
+    app.use(routes.email.post);
     app.use(express.cookieParser());
     app.use(express.session({
     	secret: 'foo',
@@ -31,9 +37,9 @@ app.configure(function(){
       		db: 'soho_mail'
     	})
   	}));
-    app.use(require('flashify'));
-    app.use(passport.initialize());
+    app.use(express.bodyParser());
     app.use(passport.session());
+    app.use(require('flashify'));
     app.use(app.router);
  });
 
