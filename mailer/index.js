@@ -1,10 +1,10 @@
 var nodemailer = require("nodemailer");
 var smtpTransport = nodemailer.createTransport("SMTP",{
-	host:"smtp.gmail.com"
+	host:"mail.sporemail.com"
     ,secureConnection:true
     ,port:465
     ,auth: {
-        user: "test@soho.sg",
+        user: "tlm@sporemail.com",
         pass: "1q2w3e4r%T"
     }
 });
