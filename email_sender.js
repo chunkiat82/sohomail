@@ -30,6 +30,7 @@ function pollEmailQueue(){
 				if ( emailQueue.statusUpdateURL ) {
 					console.log("update status", emailQueue.statusUpdateURL);
 					var url = require("url").parse(emailQueue.statusUpdateURL);
+					try{
 					var req = require('http').request({
 						hostname: url.hostname,
 						port: url.port,
@@ -41,6 +42,9 @@ function pollEmailQueue(){
 					// and also track if the update has been failed, so it can be seen on the interface
 					req.write(require('querystring').stringify({id:emailQueue.rawrequest.toString(), status: emailQueue.status}));
 					req.end();
+					} catch(err) {
+						console.log("failed to notify, change this later to another queue service to resend");
+					}
 				}
 				pollEmailQueue();
 			});

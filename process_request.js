@@ -57,7 +57,7 @@ function pollRawEmailRequest(){
 			});
 			if ( queue.statusUpdateURL ) {
 				var url = require("url").parse(queue.statusUpdateURL);
-				console.log(url);
+				try {
 				var req = require('http').request({
 					hostname: url.hostname,
 					port: url.port,
@@ -67,6 +67,9 @@ function pollRawEmailRequest(){
 				});
 				req.write(require('querystring').stringify({id:emailObj._id, status: queue.status}));
 				req.end();
+				} catch(err) {
+					console.log("failed to update teh status, ignoring, add in retry next time")
+				}
 			}
 		}
 		form.onPart = function(part) {
