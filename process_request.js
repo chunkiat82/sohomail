@@ -98,7 +98,7 @@ function pollRawEmailRequest(){
 		  			queueSaved = true;
 			  		form.resume();
 			  		var unsavedSemaphore = 0;
-			  		for ( var i = 0; i < jobUnSaved.length; ++i ) {
+			  		for ( var i = 0; i < jobsUnSaved.length; ++i ) {
 			  			++unsavedSemaphore;
 			  			(function(job){
 					  		job.queue = queue._id;
@@ -110,7 +110,7 @@ function pollRawEmailRequest(){
 					  			--unsavedSemaphore;
 					  			handleJobSave();
 					  		});
-			  			})(jobUnSaved[i])
+			  			})(jobsUnSaved[i])
 			  		}
 		  		});
 		  	}
