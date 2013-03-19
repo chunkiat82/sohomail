@@ -71,6 +71,15 @@ function pollRawEmailRequest(){
 				req.end();
 			}
 		}
+		var jobsUnSaved = [], queueSaving = false, savingUnSavedJobEnded = false;
+		function handleJobSave(){
+			if (0 >= semaphore && ended && savingUnSavedJobEnded && 0 >= unsavedSemaphore) {
+				queue.status = "active";
+				queue.save(function(){
+					removeRawAndPoll();
+				});
+			}
+		};
 		form.onPart = function(part) {
 		  if (part.name !== "emails[]") {
 
@@ -78,14 +87,31 @@ function pollRawEmailRequest(){
 		    // let formidable handle all non-file parts
 		    form.handlePart(part); // let them handle everythign else
 		  } else {
-		  	if ( !queueSaved ) {
+		  	if ( !queueSaved || !queueSaving ) {
 		  		form.pause();
 		  		if ( !queue.templateName && queue.content ) {
 		  			queue.content = dust.compile(queue.content, queue.rawrequest);
 		  		}
+		  		queueSaving = true;
 		  		queue.save(function(err) {
+		  			queueSaving = false;
 		  			queueSaved = true;
 			  		form.resume();
+			  		var unsavedSemaphore = 0;
+			  		for ( var i = 0; i < jobUnSaved.length; ++i ) {
+			  			++unsavedSemaphore;
+			  			(function(job){
+					  		job.queue = queue._id;
+					  		job.save(function(err){
+		  						if ( err ) {
+										console.log(err);
+										// now doing nothing but log, we sholud really do something about these error handling, like setting the whole queue to err, and job to err
+									}
+					  			--unsavedSemaphore;
+					  			handleJobSave();
+					  		});
+			  			})(jobUnSaved[i])
+			  		}
 		  		});
 		  	}
 				var buffer = "";
@@ -95,21 +121,21 @@ function pollRawEmailRequest(){
 		  	});
 		  	part.on('end', function(){
 		  		buffer = buffer.split("\n");
-		  		var job = new models.EmailJob({queue: queue._id, to: buffer[0], data: JSON.parse(buffer[1])});
-		  		++semaphore;
-		  		job.save(function(err){
-		  			if (0 >= --semaphore && ended) {
-		  				queue.status = "active";
-		  				queue.save(function(){
-		  					removeRawAndPoll();
-		  				});
-
-		  			}
-		  			if ( err ) {
-		  				console.log(err);
-		  				// now doing nothing but log, we sholud really do something about these error handling, like setting the whole queue to err, and job to err
-		  			}
-		  		});
+		  		var job = new models.EmailJob({to: buffer[0], data: JSON.parse(buffer[1])});
+		  		if ( queueSaved ) {
+			  		++semaphore;
+			  		job.queue = queue._id;
+			  		job.save(function(err){
+  						if ( err ) {
+								console.log(err);
+								// now doing nothing but log, we sholud really do something about these error handling, like setting the whole queue to err, and job to err
+							}
+			  			--semaphore;
+			  			handleJobSave();
+			  		});
+			  	} else {
+			  		jobsUnSaved.push(job);
+			  	}
 		  	})
 		  }
 		}
