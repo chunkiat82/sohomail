@@ -87,9 +87,11 @@ function pollRawEmailRequest(){
 		    // let formidable handle all non-file parts
 		    form.handlePart(part); // let them handle everythign else
 		  } else {
-		  	if ( !queueSaved || !queueSaving ) {
+		  	console.log(queueSaved, queueSaving, part);
+		  	if ( !(queueSaved || queueSaving) ) {
 		  		form.pause();
 		  		if ( !queue.templateName && queue.content ) {
+		  			console.log("entering this place again");
 		  			queue.content = dust.compile(queue.content, queue.rawrequest);
 		  		}
 		  		queueSaving = true;
