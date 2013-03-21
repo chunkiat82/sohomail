@@ -62,7 +62,9 @@ app.post('/jobs', routes.email.post);
 
 app.get('/templates',routes.template.list);
 app.get('/templates/:id',routes.template.get);
+app.post('/templates/:id',routes.template.update);
 app.post('/templates',routes.template.post);
+
 
 app.get('/demo/template',routes.demo.getTemplate);
 app.get('/demo/email',routes.demo.getEmail);

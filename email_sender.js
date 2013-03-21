@@ -50,7 +50,7 @@ function pollEmailQueue(){
 		}
 		if ( emailQueue.templateName ) {
 			// retrieve template, and then call send
-			models.EmailTemplate.findOne({'name':emailQueue.templateName}).select().exec(function(err, result){
+			models.EmailTemplate.findOne({_id:emailQueue.templateName}).select().exec(function(err, result){
 				callSendMail(result.name, result.compiled); // TODO, find out if there is a problem when two sourc eof hte same name is compiled
 				// and if it will hog on the memory if we keep loading more templates
 			});

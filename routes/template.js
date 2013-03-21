@@ -49,3 +49,26 @@ exports.post = [
     });
   }
 ]
+
+exports.update = [
+  passport.authenticate(['basic', 'oauth2-client-password', 'header'], { session: false }),
+  function(req, res){
+    var name = req.body.name,
+        content = req.body.content,
+        compiled = dust.compile(content, name);       
+    models.EmailTemplate.findAndModify( 
+      {'_id':req.param('id'), owner:req.user._id , name:name },
+      { content: content, compiled: compiled },
+      function(err, data){
+        if ( err ) {
+          return res.json(500, {});
+        }
+        if(!data) {
+          return res.json(404, {});
+        }
+        res.json(200,{id: template._id});
+      }
+    );
+  }
+  
+]

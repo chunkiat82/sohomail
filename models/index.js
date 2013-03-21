@@ -51,7 +51,6 @@ var templateSchema = new Schema({
 	, dateCreated :{ type: Date, default: Date.now }
 	, owner: {type: Schema.Types.ObjectId, ref: 'User'}
 });
-templateSchema.index({name:1, owner:1}, {unique:true});
 exports.EmailTemplate = mongoose.model('EmailTemplate', templateSchema, 'email_template');
 
 
