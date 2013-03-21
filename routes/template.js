@@ -56,9 +56,9 @@ exports.update = [
     var name = req.body.name,
         content = req.body.content,
         compiled = dust.compile(content, name);       
-    models.EmailTemplate.findAndModify( 
-      {'_id':req.param('id'), owner:req.user._id , name:name },
-      { content: content, compiled: compiled },
+    models.EmailTemplate.findOneAndUpdate( 
+      {'_id':req.param('id'), owner:req.user._id },
+      { $set: {content: content, compiled: compiled ,name : name}},
       function(err, data){
         if ( err ) {
           return res.json(500, {});
@@ -66,7 +66,7 @@ exports.update = [
         if(!data) {
           return res.json(404, {});
         }
-        res.json(200,{id: template._id});
+        res.json(200,{id: data._id});
       }
     );
   }
