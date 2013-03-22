@@ -53,7 +53,7 @@ app.get('/', routes.home.get);
 
 //CRUD queue
 app.get('/queues', routes.queue.list);
-app.get('/queue/:queue/progress', routes.queue.progress);
+app.get('/queues/:queue/progress', routes.queue.progress);
 app.get('/queue/:queue', routes.queue.get);
 
 //CRUD jobs

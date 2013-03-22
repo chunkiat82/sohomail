@@ -3,9 +3,12 @@ var models = require('./models'),
 	mail = require('./mailer'),
 	dust = require('dustjs-linkedin');
 require("mongoose").connect('localhost', 'soho_mail');
+function logger(what) {
+	console.log((new Date()), what);
+}
 setTimeout(resetAndPollEmailQueue, 1000);
 function logError(comment, err) {
-	console.log("You have a freaking error("+err+"): "+comment);
+	logger("You have a freaking error("+err+"): "+comment);
 }
 var last_time;
 
@@ -15,7 +18,7 @@ function resetAndPollEmailQueue() {
 }
 function pollEmailQueue(){
 	if ( Date.now() - last_time > 1000 ) {
-		console.log("timeout here");
+		logger("timeout here");
 		return setTimeout(resetAndPollEmailQueue, 30);
 	}
 	models.EmailQueue.findOne({status: "active"}).exec(function(err, emailQueue) {
@@ -28,7 +31,7 @@ function pollEmailQueue(){
 		function callSendMail(templateName, template) {
 			sendEmail(emailQueue, templateName, template, function(err) {
 				if ( emailQueue.statusUpdateURL ) {
-					console.log("update status", emailQueue.statusUpdateURL);
+					logger("update status", emailQueue.statusUpdateURL);
 					var url = require("url").parse(emailQueue.statusUpdateURL);
 					var req = require('http').request({
 						hostname: url.hostname,
@@ -38,7 +41,7 @@ function pollEmailQueue(){
 						agent: false
 					});
 					req.on('error', function(error){
-						console.log("failed to notify, change this later to another queue service to resend");
+						logger("failed to notify, change this later to another queue service to resend");
 					});
 					// put something here to track if the final status has been updated properly, if it is not, retry maybe up to 5 times or something in 5 minute intervals
 					// and also track if the update has been failed, so it can be seen on the interface
@@ -61,7 +64,7 @@ function pollEmailQueue(){
 }
 
 function sendEmail(queue, templateName, template, cb){
-	console.log("Email Start Sending");
+	logger("Email Start Sending");
 	var semaphore = 0, closed = false;
 	function handleSemaphore() {
 		if( semaphore <= 0 && closed) {
@@ -81,13 +84,13 @@ function sendEmail(queue, templateName, template, cb){
 
 		dust.render(templateName,job.data, function(err, html) {
 			if (err){
-				console.log("dust is ill formed and cannot be rendered", err);
+				logger("dust is ill formed and cannot be rendered", err);
 			}else{
 				mail.sendMail({'to':job.to, 'from':queue.from, 'subject':queue.subject ,'html':html});
 				job.status='sent';
 				job.save(function(err){
 					if ( err ) {
-						return console.log("now this would be serious, it failed while updating status");
+						return logger("now this would be serious, it failed while updating status");
 					}
 					--semaphore;
 					handleSemaphore();
@@ -100,12 +103,12 @@ function sendEmail(queue, templateName, template, cb){
 		if ( job ) {
 			sendMail(job);
 		} else {
-			console.log("couldnt find job");
+			logger("couldnt find job");
 			--semaphore;
 		}
 		handleSemaphore();
 	}).on('error', function(err){
-		console.log(err);
+		logger(err);
 	}).on('close', function(){
 		closed = true;
 		handleSemaphore();

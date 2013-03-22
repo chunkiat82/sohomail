@@ -46,21 +46,30 @@ exports.progress =  [
   passport.authenticate(['basic', 'oauth2-client-password', 'header'], { session: false }),
   function(req, res){
   var queueId = req.param('queue');
-
   //total
-  models.EmailQueue.find({"queue":queueId}).count().exec(function (err,dataTotal){    
-    if (data) {
+  models.EmailQueue.findOne({"rawrequest":queueId}).exec(function (err,data){    
+  if (data) {
+  models.EmailJob.count({"queue":data._id},function (err,dataTotal){    
+    logger("queueId:"+queueId);
+    logger("dataTotal:"+dataTotal);
+    logger("err:"+err);
+    logger("data._id:"+data._id);
+    if (dataTotal) {
       //sent total
-      models.EmailQueue.find({"queue":queueId, "status":"sent" }).count().exec(function (err,dataSent){          
-        return res.json(200, {progress: (dataSent/dataTotal)});
+      models.EmailJob.count({"queue":data._id, "status":"sent" },function (err,dataSent){          
+	var result = {progress: (dataSent/dataTotal)};
+	logger("result:"+result);
+        return res.json(200, result);
       });
     }
     else{
       return res.json(500, {});
     }
   });
-
-  
+  }else{
+	res.json(404,{});
+}
+  });
 
 }];
 
