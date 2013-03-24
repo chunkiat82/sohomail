@@ -8,15 +8,17 @@ var smtpTransport = nodemailer.createTransport("SMTP",{
         pass: "1q2w3e4r%T"
     }
 });
+var from = 'noreply@sporemail.com';
 exports.sendMail = function(data){
 	// setup e-mail data with unicode symbols
 
 	var to = data.to;
-	var from = data.from;
+	var reply_to = data.from;
 	var subject = data.title || data.subject || "";
 	var html= data.html || "";
 	var mailOptions = {
-	    from: from, // sender address
+		from: from,
+	    reply_to: reply_to, // sender address
 	    to: to, // list of receivers
 	    subject:subject, // Subject line
 	    html: html // html body
