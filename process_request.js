@@ -149,7 +149,6 @@ function pollRawEmailRequest(){
 		form.parse(rs);
 		form.on('end', function(){
 			log("ended parsing form");
-			rs.end();
 			ended = true;
 			handleJobSave();
 		})
