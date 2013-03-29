@@ -30,6 +30,7 @@ exports.post = function(req, res, next){
 					// create object
 					// store the header in there
 					stream.end();
+					stream.close();
 					var emailObj = new models.EmailRawRequest(
 						{
 							headers: req.headers,

@@ -5,8 +5,14 @@ var models = require('./models'),
 	formidable = require("formidable");
 require("mongoose").connect('localhost', 'soho_mail');
 setTimeout(resetAndPollRawEmailRequest, 1000);
+function log() {
+        var args = Array.prototype.slice.call(arguments);
+        args.unshift((new Date()));
+        console.log.apply(console, args);
+}
+
 function logError(comment, err) {
-	console.log("You have a freaking error("+err+"): "+comment);
+	log("You have a freaking error("+err+"): "+comment);
 }
 var last_time;
 
@@ -32,18 +38,18 @@ function pollRawEmailRequest(){
 		var rs = fs.createReadStream(emailObj.path);
 		rs.headers = emailObj.headers;
 
-	// console.log(stream.path);
-	// fs.exists(stream.path,function(exists){console.log("it exists?", exists);});
-		// rs.on('data', function(data){ console.log(data); })
-		// 	.on('error', function(data, err){ console.log(data,err); })
-		// 	.on('open', function(data,and){ console.log(data,and); })
+	// log(stream.path);
+	// fs.exists(stream.path,function(exists){log("it exists?", exists);});
+		// rs.on('data', function(data){ log(data); })
+		// 	.on('error', function(data, err){ log(data,err); })
+		// 	.on('open', function(data,and){ log(data,and); })
 		var form = new formidable.IncomingForm();
 		// rs.headers = req.headers;
 		form.on('field', function(name, value) {
 			queue[name] = value;
 		});
 		form.on('error', function(err) {
-			console.log(err);
+			log(err);
 		});
 		var queueSaved = false, ended = 0, semaphore = 0;
 		function removeRawAndPoll(){
@@ -51,7 +57,7 @@ function pollRawEmailRequest(){
 				if ( err ) {
 					logError("Failed to remove", err);
 				}else{
-					console.log("done sending queue "+queue);
+					log("done sending queue "+queue);
 				}
 				pollRawEmailRequest();
 			});
@@ -65,15 +71,15 @@ function pollRawEmailRequest(){
 					agent: false
 				});
 				req.on('error', function(error){
-					console.log("failed to notify, change this later to another queue service to resend");
+					log("failed to notify, change this later to another queue service to resend");
 				});
 				req.write(require('querystring').stringify({id:emailObj._id, status: queue.status}));
 				req.end();
 			}
 		}
-		var jobsUnSaved = [], queueSaving = false, savingUnSavedJobEnded = false;
+		var jobsUnSaved = [], queueSaving = false, unsavedSemaphore=0;
 		function handleJobSave(){
-			if (0 >= semaphore && ended && savingUnSavedJobEnded && 0 >= unsavedSemaphore) {
+			if (queue.status !== "active" && 0 >= semaphore && ended && 0 >= unsavedSemaphore) {
 				queue.status = "active";
 				queue.save(function(){
 					removeRawAndPoll();
@@ -87,11 +93,11 @@ function pollRawEmailRequest(){
 		    // let formidable handle all non-file parts
 		    form.handlePart(part); // let them handle everythign else
 		  } else {
-		  	console.log(queueSaved, queueSaving, part);
+		  	log(queueSaved, queueSaving, part);
 		  	if ( !(queueSaved || queueSaving) ) {
 		  		form.pause();
 		  		if ( !queue.templateName && queue.content ) {
-		  			console.log("entering this place again");
+		  			log("entering this place again");
 		  			queue.content = dust.compile(queue.content, queue.rawrequest);
 		  		}
 		  		queueSaving = true;
@@ -99,14 +105,13 @@ function pollRawEmailRequest(){
 		  			queueSaving = false;
 		  			queueSaved = true;
 			  		form.resume();
-			  		var unsavedSemaphore = 0;
 			  		for ( var i = 0; i < jobsUnSaved.length; ++i ) {
 			  			++unsavedSemaphore;
 			  			(function(job){
 					  		job.queue = queue._id;
 					  		job.save(function(err){
 		  						if ( err ) {
-										console.log(err);
+										log(err);
 										// now doing nothing but log, we sholud really do something about these error handling, like setting the whole queue to err, and job to err
 									}
 					  			--unsavedSemaphore;
@@ -119,7 +124,7 @@ function pollRawEmailRequest(){
 				var buffer = "";
 		  	part.on('data', function(data){
 		  		buffer += data.toString();
-		  		console.log(data.toString());
+		  		log(data.toString());
 		  	});
 		  	part.on('end', function(){
 		  		buffer = buffer.split("\n");
@@ -129,7 +134,7 @@ function pollRawEmailRequest(){
 			  		job.queue = queue._id;
 			  		job.save(function(err){
   						if ( err ) {
-								console.log(err);
+								log(err);
 								// now doing nothing but log, we sholud really do something about these error handling, like setting the whole queue to err, and job to err
 							}
 			  			--semaphore;
@@ -143,16 +148,13 @@ function pollRawEmailRequest(){
 		}
 		form.parse(rs);
 		form.on('end', function(){
+			log("ended parsing form");
+			rs.end();
 			ended = true;
-			if (0 >= semaphore && ended) {
-				queue.status = "active";
-				queue.save(function(){
-					removeRawAndPoll();
-				});
-			}
+			handleJobSave();
 		})
 		form.on('error', function(error){
-			console.log("failed to parse multipart, with error: ", error); // we should store this somewhere so user cna retrieve again
+			log("failed to parse multipart, with error: ", error); // we should store this somewhere so user cna retrieve again
 			removeRawAndPoll();
 		});
 		// async.series({
@@ -201,7 +203,7 @@ function pollRawEmailRequest(){
 		// 					});
 		// 				}
 		// 				else{
-		// 					console.log("template not found");
+		// 					log("template not found");
 		// 					next("template not found",emailObj.content);
 		// 				}
 						
@@ -252,7 +254,7 @@ function pollRawEmailRequest(){
 		// 			if ( err ) {
 		// 				logError("Failed to remove", err);
 		// 			}else{
-		// 				console.log("done sending queue "+queue);
+		// 				log("done sending queue "+queue);
 		// 			}
 		// 			pollRawEmailRequest();
 		// 		});
