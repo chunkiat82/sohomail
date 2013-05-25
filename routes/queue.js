@@ -77,7 +77,10 @@ function(req, res) {
             "status": "sent"
           }, function(err, dataSent) {
             var result = {
-              progress: (dataSent / dataTotal)
+              progress: (dataSent / dataTotal),
+              sent: dataSent,
+              notSent: (dataTotal - dataSent), //calculated
+              total: dataTotal
             };
             logger("result:" + result);
             return res.json(200, result);
