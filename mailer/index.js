@@ -1,10 +1,10 @@
 var nodemailer = require("nodemailer");
 var smtpTransport = nodemailer.createTransport("SMTP",{
-	host:"mail.sporemail.com"
+     host:"ec2-54-251-106-131.ap-southeast-1.compute.amazonaws.com"
     ,secureConnection:false
     ,port:25
     ,auth: {
-        user: "tlm@sporemail.com",
+        user: "info@tradelinkmedia.biz",
         pass: "1q2w3e4r%T"
     }
 });
